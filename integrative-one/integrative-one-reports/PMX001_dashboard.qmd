@@ -303,7 +303,7 @@ tribble(
   "Minor", "Decimal commas", "Albumin, creatinine and CRP partly stored as text (e.g. '43,9')", "All",
   "Minor", "Undocumented coding", "CYP2D6 codes without code book; WEEK = 1 in both periods; EVID 4 always on oral doses", "All",
   "Minor", "Naming and free text", "DOSE vs AMT; undocumented NOTES column with handling remarks", "6 participants") |>
-  gt(groupname_col = "Severity") |>
+  gt(groupname_col = "Severity") |> 
   tab_style(cell_text(weight = "bold"), cells_row_groups())
 ```
 
@@ -347,7 +347,7 @@ raw |>
   gt()
 ```
 
-The missing values are not spread at random. They come from only two participants, and each has its own cause. For ID7, the concentrations were recorded too low, so many values fell below the detection limit. These values are missing because of the scale error, not because the drug level was truly too low to measure. For ID1, the two missing values sit between measured values of about 49 and 37 mg/L. On a falling concentration curve, a value cannot drop below the detection limit and then rise again, so these entries are most likely recording errors (@fig-id1-lloq).
+The missing values are not spread at random and come from only two participants. For ID7, the concentrations were recorded too low, so many values fell below the detection limit. These values are missing because of the scale error, not because the drug level was truly too low to measure. For ID1, the two missing values sit between measured values of about 49 and 37 mg/L. On a falling concentration curve, a value cannot drop below the detection limit and then rise again, so these entries are most likely recording errors (@fig-id1-lloq).
 
 ```{r}
 #| label: fig-id1-lloq
@@ -406,13 +406,13 @@ typed |>
   count(ID, SEX) |>
   group_by(ID) |>
   filter(n() > 1 | any(SEX == 2)) |>
-  summarise(`Codes in raw file (records)` = paste0(SEX, " (", n, ")", collapse = ", "), .groups = "drop") |>
+  summarise(`Codes in raw file` = paste0(SEX, " (", n, ")", collapse = ", "), .groups = "drop") |>
   left_join(distinct(pk, ID, SEX), by = "ID") |>
   mutate(`Sex in cleaned file` = if_else(SEX == 1, "Male", "Female"), .keep = "unused") |>
   gt()
 ```
 
-Four participants have either the undefined code 2 or a sex that changes partway through the study. 
+Four participants have either the undefined code 2 or a sex that changes partway through the study (@tbl-sex). IDs 10 and 11 were coded 2 throughout and were recoded as female. IDs 8 and 12 switch between codes and were set to male.
 
 ### Doses, design and notes
 
@@ -490,11 +490,11 @@ ggplot(filter(pk, EVID == 0, CONC > 0), aes(TIME, CONC, colour = Administration)
 
 ## Data formatting
 
-The analysis dataset is one long table in the standard NONMEM format, so it can be used directly in PKNCA, Monolix and NONMEM. Each row is either a dose (EVID 1 for IV, 4 for oral) or a concentration measurement (EVID 0) for one participant in one period. TIME starts again at 0 at each dose, and the covariates are repeated on every row.
+The analysis dataset is one long table in the standard NONMEM format, so it can be used directly in PKNCA, Monolix and NONMEM. Each row is either a dose (EVID 1 or 4) or a concentration measurement (EVID 0) for one participant in one period. TIME starts again at 0 at each dose, and the covariates are repeated on every row.
 
 For the NCA, the data are split into a concentration table and a dose table for each route. The IV infusion lasted AMT/RATE = `r signif(infusion_h, 3)` h. There was no oral sample before dosing, so the oral concentration at time 0 is set to zero.
 
-The NCA results come out with one row per parameter. They are reshaped to one row per participant. Parameters are given route-specific names (for example CL for IV and CL_F for oral) before the IV and oral results are combined, so it is always clear which route each value belongs to.
+The NCA results come out with one row per parameter. They are reshaped to one row per participant. Parameters are given route-specific names (for example CL for IV and CL_F for oral) before the IV and oral results are combined.
 
 ```{r}
 #| label: derived
@@ -598,9 +598,9 @@ subj_clean |>
 
 Most covariates are only weakly related to each other (|ρ| below 0.25). Three pairs show a moderate relationship:
 
-- **Creatinine and eGFR (ρ = −0.65):** higher creatinine goes with lower eGFR. This is expected, because eGFR is calculated from creatinine.
-- **Creatinine and weight (ρ = 0.57):** heavier participants tend to have higher creatinine. Creatinine comes from muscle, and heavier people usually have more muscle.
-- **Albumin and CRP (ρ = −0.66):** higher CRP goes with lower albumin. CRP rises during inflammation, while albumin tends to fall.
+- **Creatinine and eGFR (ρ = −0.65):** participants with higher serum creatinine tended to have lower eGFR. This is expected, because eGFR is calculated from creatinine.
+- **Creatinine and weight (ρ = 0.57):** heavier participants tended to have higher creatinine. Creatinine is produced by muscle, and heavier people usually have more muscle mass.
+- **Albumin and CRP (ρ = −0.66):** participants with higher CRP tended to have lower albumin. CRP increases during inflammation, while albumin decreases.
 
 Because creatinine and eGFR largely measure the same thing (kidney function), only one of them should be used when testing covariates in a model. With only 12 participants, these relationships should be treated as indications rather than conclusions.
 
@@ -698,16 +698,16 @@ p_log <- ggplot(filter(conc_all, CONC > 0), aes(TIME, CONC, colour = Administrat
 (p_lin + p_log) + plot_layout(guides = "collect")
 ```
 
-After IV infusion, concentrations peak at the end of the infusion and decline as a single straight line on the semi-log scale, with no visible distribution phase. After oral dosing, concentrations rise to a peak at about 4 h and then decline parallel to the IV curve. These patterns suggest one-compartment disposition with first-order absorption, and absorption faster than elimination.
+After IV infusion, concentrations peak at the end of the infusion and decline as a single straight line on the semi-log scale, with no visible distribution phase. After oral dosing, concentrations rise to a peak at about 4 h and then decline parallel to the IV curve. These patterns suggest one-compartment model with first-order absorption, and absorption faster than elimination.
 
 ## Data management plan
 
 The Data Management Plan (DMP) describes how the Tomovicen study data are managed according to the FAIR principles, within the sponsor's confidentiality requirements.
 
-- **Findable:** the dataset is identified and documented through a planned README and a data dictionary (@tbl-dictionary).
-- **Accessible:** data are stored on SharePoint with restricted access. Public sharing requires sponsor approval.
+- **Findable:** the project is held in a GitHub repository ([nangosyah/pharmacometrics-integrative-works](https://github.com/nangosyah/pharmacometrics-integrative-works)), and the dataset is documented through a README and a data dictionary (@tbl-dictionary).
+- **Accessible:** the study data are stored on SharePoint with restricted access. Public sharing of the data requires sponsor approval.
 - **Interoperable:** variable definitions, data types and units are documented (@tbl-dictionary) to support consistent interpretation across Excel, R and MonolixSuite (PKanalix).
-- **Reusable:** scripted transformations, quality checks (@tbl-issues), software documentation and version-controlled code support reproducibility. Reuse remains restricted to authorised purposes.
+- **Reusable:** scripted transformations, quality checks (@tbl-issues), software documentation and version control in GitHub support reproducibility. Reuse of the data remains restricted to authorised purposes.
 
 The DMP therefore supports mainly internal FAIR use rather than open access.
 
@@ -882,7 +882,7 @@ ggplot(fit_oral, aes(TIME, CONC)) +
 ```{r}
 #| label: ka-and-f
 # ---- Absorption rate constant (ka): method of residuals ----
-# Idea: after an oral dose, the observed curve = elimination line - absorption part.
+# after an oral dose, the observed curve = elimination line - absorption part.
 # Subtracting the observed values from the extended elimination line leaves the
 # absorption part, whose slope on the log scale gives ka.
 
@@ -920,9 +920,6 @@ f_per_subject <- inner_join(select(wide_iv, ID, AUC_iv = AUC_inf), select(wide_o
   mutate(F = (AUC_oral / dose_oral_mg) / (AUC_iv / dose_iv_mg))
 
 # ---- Parameters to report ----
-# One row per parameter and route: the internal name (code), the label and unit shown
-# in the report, and its class (primary, secondary or exposure). The row order sets
-# the order in the parameter table.
 param_meta <- tribble(
   ~route, ~code, ~label, ~unit, ~class,
   "IV", "Cmax", "Cmax", "mg/L", "Exposure",
@@ -997,14 +994,6 @@ param_meta |>
   tab_footnote("tmax is reported as median (IQR) only: all participants share the same sampling times. Geometric statistics are given for exposure, clearance, volume and F, by convention for ratio-scale PK parameters.") |>
   tab_footnote("CL/F and Vz/F are apparent values.")
 ```
-
-**Interpretation**
-
-
-
-**Limitations.** 
-
-
 
 
 ::: {.panel-tabset}
@@ -1392,15 +1381,16 @@ ggplot() +
   # Central compartment
   annotate("rect", xmin = 0, xmax = 4, ymin = 0, ymax = 2,
            fill = box_fill, colour = "grey10", linewidth = 0.8) +
-  annotate("text", x = 2, y = 1, label = "Central compartment\nA1\nV1",
-           size = 5, lineheight = 1.1) +
+  annotate("text", x = 2, y = 1.45, label = "Central compartment", size = 5) +
+  annotate("text", x = 2, y = 1.0, label = "A[1]", parse = TRUE, size = 5) +
+  annotate("text", x = 2, y = 0.55, label = "V[1]", parse = TRUE, size = 5) +
   # Infusion
   annotate("text", x = 2, y = 4.4, label = "INFUSION", size = 5) +
-  annotate("segment", x = 2, xend = 2, y = 4, yend = 1.6,
+  annotate("segment", x = 2, xend = 2, y = 4, yend = 2,
            colour = arrow_col, linewidth = 0.8, arrow = arr) +
   annotate("text", x = 2.15, y = 3, label = "k[0]", parse = TRUE, size = 5, hjust = 0) +
   # Elimination
-  annotate("segment", x = 2, xend = 2, y = 0.2, yend = -1.8,
+  annotate("segment", x = 2, xend = 2, y = 0, yend = -1.8,
            colour = arrow_col, linewidth = 0.8, arrow = arr) +
   annotate("text", x = 2.15, y = -0.8, label = "k[e]", parse = TRUE, size = 5, hjust = 0) +
   coord_fixed(xlim = c(-0.2, 4.2), ylim = c(-2, 4.8), expand = FALSE) +
@@ -1432,23 +1422,26 @@ ggplot() +
   # Gut (depot)
   annotate("polygon", x = 1.5 + cos(theta), y = 1 + sin(theta),
            fill = box_fill, colour = "grey10", linewidth = 0.8) +
-  annotate("text", x = 1.5, y = 1, label = "Depot\n(gut) Ag", size = 5, lineheight = 1.1) +
+  annotate("text", x = 1.5, y = 1.4, label = "Depot", size = 5) +
+  annotate("text", x = 1.5, y = 1.0, label = "(gut)", size = 5) +
+  annotate("text", x = 1.5, y = 0.6, label = "A[g]", parse = TRUE, size = 5) +
   # Central compartment
   annotate("rect", xmin = 4.8, xmax = 9, ymin = 0, ymax = 2.2,
            fill = box_fill, colour = "grey10", linewidth = 0.8) +
-  annotate("text", x = 6.9, y = 1.1, label = "Central compartment\nA1\nV1",
-           size = 5, lineheight = 1.1) +
+  annotate("text", x = 6.9, y = 1.55, label = "Central compartment", size = 5) +
+  annotate("text", x = 6.9, y = 1.1, label = "A[1]", parse = TRUE, size = 5) +
+  annotate("text", x = 6.9, y = 0.65, label = "V[1]", parse = TRUE, size = 5) +
   # Dose into gut
   annotate("text", x = 0.4, y = 3.8, label = "Dose", size = 5) +
-  annotate("segment", x = 0.4, xend = 1.2, y = 3.4, yend = 1.7,
+  annotate("segment", x = 0.5, xend = 1.15, y = 3.4, yend = 1.95,
            colour = arrow_col, linewidth = 0.8, arrow = arr) +
   # Absorption: fraction F reaches the central compartment
-  annotate("segment", x = 2.5, xend = 4.95, y = 1, yend = 1,
+  annotate("segment", x = 2.5, xend = 4.8, y = 1, yend = 1,
            colour = arrow_col, linewidth = 0.8, arrow = arr) +
-  annotate("text", x = 3.6, y = 1.35, label = "k[a]", parse = TRUE, size = 5) +
-  annotate("text", x = 3.6, y = 0.6, label = "F <= 1", parse = TRUE, size = 5) +
+  annotate("text", x = 3.65, y = 1.35, label = "k[a]", parse = TRUE, size = 5) +
+  annotate("text", x = 3.65, y = 0.6, label = "F <= 1", parse = TRUE, size = 5) +
   # Elimination
-  annotate("segment", x = 6.9, xend = 6.9, y = 0.2, yend = -1.8,
+  annotate("segment", x = 6.9, xend = 6.9, y = 0, yend = -1.8,
            colour = arrow_col, linewidth = 0.8, arrow = arr) +
   annotate("text", x = 7.05, y = -0.8, label = "k[e]", parse = TRUE, size = 5, hjust = 0) +
   coord_fixed(xlim = c(-0.2, 9.2), ylim = c(-2, 4.2), expand = FALSE) +
@@ -1474,6 +1467,10 @@ This Phase I two-sequence, two-period crossover study characterised the pharmaco
 In the exploratory covariate analysis, body weight was the most consistent covariate after IV dosing (heavier participants had a lower Cmax and a larger Vz), while higher CRP and body weight were associated with lower oral exposure and a higher Vz/F, possibly reflecting a lower oral bioavailability. Participants carrying the CYP2D6 *3/*5 codes tended to have higher exposure and slower elimination than *1/*2 participants (oral AUC0-∞ and ke: p = 0.041), which is consistent with a contribution of CYP2D6 to the clearance of the parent compound, but this does not hold after correction for multiple testing. Given the small sample size and the number of associations tested, these findings are hypothesis-generating only. A one-compartment model, with a zero-order infusion for the IV route and first-order absorption with bioavailability F for the oral route, is proposed to describe the data.
 
 The next step is a population PK analysis (non-linear mixed-effects modelling) to quantify the covariate effects on clearance, volume and bioavailability. Measuring the active metabolite(s) would link CYP2D6 status to exposure and response, and a PK/PD target would settle whether once-daily dosing is adequate for Phase II.
+
+# Declaration on the use of generative AI {.unnumbered}
+
+The authors carried out the data management, analyses and interpretation in this report. Generative AI tools (Claude, Anthropic) were used only to improve the wording of some sections and to help write and debug parts of the R code. The authors take full responsibility for the content of this report.
 
 # References {.unnumbered}
 
