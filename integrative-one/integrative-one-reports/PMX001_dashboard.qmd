@@ -24,12 +24,17 @@ references:
     publisher: R Foundation for Statistical Computing
     publisher-place: Vienna, Austria
     URL: https://www.R-project.org/
+  - id: CBIP-Tamoxifen
+    type: webpage
+    title: "Tamoxifen"
+    URL: "https://www.cbip.be/fr/chapters/14?frag=4697&view=pvt&vmp_group=29702"
+    container-title: CBIP
 format:
   html:
-    toc: false
+    toc: true
     toc-depth: 2
-    toc-location: left
-    toc-title: "Contents"
+    # toc-location: right-body
+    # toc-title: "Contents"
     number-sections: true
     page-layout: full
     code-fold: true
@@ -114,7 +119,7 @@ CYP2D6 is therefore the key enzyme for activation. The *CYP2D6* gene is highly p
 
 ### Elimination
 
-Elimination is slow. The terminal elimination half-life is 5 to 7 days for tamoxifen and about 14 days for N-desmethyltamoxifen. Excretion is mainly faecal, with minor urinary excretion of unchanged drug and metabolites, and enterohepatic recirculation is likely (tamoxifen Summary of Product Characteristics).
+Elimination is slow. The terminal elimination half-life is 5 to 7 days for tamoxifen and about 14 days for N-desmethyltamoxifen. Excretion is mainly faecal, with minor urinary excretion of unchanged drug and metabolites, and enterohepatic recirculation is likely [@CBIP-Tamoxifen]
 :::
 
 ### Pharmacodynamic of Tamoxifen
@@ -122,19 +127,19 @@ Elimination is slow. The terminal elimination half-life is 5 to 7 days for tamox
 ::: panel-tabset
 ## Mechanism of action
 
-Tamoxifen (ATC code L02BA01) is a non-steroidal selective oestrogen receptor modulator (SERM) with a triphenylethylene structure. It exerts tissue-specific effects: it acts as an oestrogen-receptor (ER) antagonist in breast tissue, where it competitively blocks oestrogen binding to its receptor, and as a partial agonist in the endometrium, bone and liver. This partial agonism explains its beneficial effects on bone mass maintenance and lipid profile (reduction in total and LDL cholesterol) in postmenopausal women, as well as its endometrial and thromboembolic adverse effects. Tamoxifen is considered a prodrug: its metabolites 4-hydroxytamoxifen and endoxifen have a 30-100 times higher ER affinity than the parent compound, and since endoxifen reaches markedly higher plasma concentrations than 4-hydroxytamoxifen, it is regarded as the main active metabolite.(RCP)
+Tamoxifen (ATC code L02BA01) is a non-steroidal selective oestrogen receptor modulator (SERM) with a triphenylethylene structure. It exerts tissue-specific effects: it acts as an oestrogen-receptor (ER) antagonist in breast tissue, where it competitively blocks oestrogen binding to its receptor, and as a partial agonist in the endometrium, bone and liver. This partial agonism explains its beneficial effects on bone mass maintenance and lipid profile (reduction in total and LDL cholesterol) in postmenopausal women, as well as its endometrial and thromboembolic adverse effects. Tamoxifen is considered a prodrug: its metabolites 4-hydroxytamoxifen and endoxifen have a 30-100 times higher ER affinity than the parent compound, and since endoxifen reaches markedly higher plasma concentrations than 4-hydroxytamoxifen, it is regarded as the main active metabolite.[@CBIP-Tamoxifen]
 
 ## Indication and dosage
 
-Tamoxifen is indicated for the adjuvant treatment of ER-positive early breast cancer after surgery in pre- and postmenopausal women (for 5 years), for ER-positive metastatic or advanced breast cancer, and for male breast cancer. The standard dose is 20 mg/day orally, given once daily or as 10 mg twice daily.(RCP)
+Tamoxifen is indicated for the adjuvant treatment of ER-positive early breast cancer after surgery in pre- and postmenopausal women (for 5 years), for ER-positive metastatic or advanced breast cancer, and for male breast cancer. The standard dose is 20 mg/day orally, given once daily or as 10 mg twice daily.[@CBIP-Tamoxifen]
 
 ## Adverse effects
 
-Common adverse effects are hot flushes and other vasomotor symptoms, mood changes, vaginal dryness and menstrual irregularities. Rare but severe reactions include depression, venous thromboembolism, endometrial cancer and stroke. (RCP)
+Common adverse effects are hot flushes and other vasomotor symptoms, mood changes, vaginal dryness and menstrual irregularities. Rare but severe reactions include depression, venous thromboembolism, endometrial cancer and stroke. [@CBIP-Tamoxifen]
 
 ## Drug interaction
 
-Tamoxifen is primarily metabolised by CYP3A4 (N-demethylation) and CYP2D6 (formation of endoxifen). Strong CYP2D6 inhibitors (e.g. paroxetine, fluoxetine, quinidine, bupropion) reduce endoxifen plasma concentrations by 65-75% and may decrease efficacy, so their co-administration should be avoided whenever possible. CYP3A4 inducers such as rifampicin lower tamoxifen plasma levels, although the clinical relevance remains uncertain. Pharmacodynamic interactions include potentiation of the anticoagulant effect of coumarin derivatives (e.g. warfarin), an increased risk of thromboembolic events with concomitant cytotoxic agents, and additive QTc prolongation with other QT-prolonging drugs.(RCP)
+Tamoxifen is primarily metabolised by CYP3A4 (N-demethylation) and CYP2D6 (formation of endoxifen). Strong CYP2D6 inhibitors (e.g. paroxetine, fluoxetine, quinidine, bupropion) reduce endoxifen plasma concentrations by 65-75% and may decrease efficacy, so their co-administration should be avoided whenever possible. CYP3A4 inducers such as rifampicin lower tamoxifen plasma levels, although the clinical relevance remains uncertain. Pharmacodynamic interactions include potentiation of the anticoagulant effect of coumarin derivatives (e.g. warfarin), an increased risk of thromboembolic events with concomitant cytotoxic agents, and additive QTc prolongation with other QT-prolonging drugs.[@CBIP-Tamoxifen]
 :::
 
 ### Biomarkers
@@ -379,7 +384,7 @@ ggplot(id26, aes(ID2, ID6, colour = Administration)) +
   labs(x = "ID2 concentration (mg/L)", y = "ID6 concentration (mg/L)", colour = NULL)
 ```
 
-ID6 and ID2 have exactly the same values, for all `r sum(id26$ID2 == id26$ID6, na.rm = TRUE)` measured concentrations and for every covariate. Two different people cannot give identical results, so one of these records must be a copy of the other. The notes column also points to problems with both: ID2's data were copied by hand, and a dilution step for ID6 was never confirmed.
+ID6 and ID2 have exactly the same values, for all `r sum(id26$ID2 == id26$ID6, na.rm = TRUE)` measured concentrations and for every covariate. Such complete agreement strongly suggests duplicated records. The notes column also points to problems with both: ID2's data were copied by hand, and a dilution step for ID6 was never confirmed.
 
 ### Concentration outliers
 
@@ -441,7 +446,7 @@ The sampling schedule was identical in all participants (IV: 18 samples includin
 
 ## Data cleaning
 
-The assessment above was carried out on the raw dataset to find its errors. A cleaned dataset was then provided and used for all analyses. @tbl-cleaning shows how each problem is resolved in the cleaned dataset, @fig-clean-profiles shows the cleaned concentration profiles, and @fig-visdat-clean confirms that the analysis dataset is complete and clean.
+The assessment above was carried out on the raw dataset to find its errors. A cleaned dataset was then provided by the professors and used for all analyses. @tbl-cleaning shows how each problem is resolved in the cleaned dataset, @fig-clean-profiles shows the cleaned concentration profiles, and @fig-visdat-clean confirms that the analysis dataset is complete and clean.
 
 ::: {.panel-tabset}
 
@@ -566,17 +571,17 @@ ggplot(cov_long, aes(value)) +
 cov_long |>
   group_by(Covariate = name) |>
   summarise(W = shapiro.test(value)$statistic, `p-value` = shapiro.test(value)$p.value, .groups = "drop") |>
-  mutate(`Normally distributed?` = if_else(`p-value` < 0.05, "No", "Yes")) |>
+  mutate(`Normality rejected?` = if_else(`p-value` < 0.05, "Yes", "No")) |>
   gt() |>
   fmt_number(W, decimals = 2) |>
   fmt_number(`p-value`, decimals = 3) |>
-  cols_align(align = "center", columns = c(W, `p-value`, `Normally distributed?`)) |>
-  cols_width(`Normally distributed?` ~ px(170))
+  cols_align(align = "center", columns = c(W, `p-value`, `Normality rejected?`)) |>
+  cols_width(`Normality rejected?` ~ px(170))
 ```
 
-The mean and SD describe a covariate well only when its values are normally distributed. If they are not, the median and range are a better summary. The Shapiro-Wilk test was used to check this (@tbl-normality). Its null hypothesis (H0) is that the data are normally distributed, so a p-value below 0.05 rejects H0 and suggests that the values are not normally distributed. With only 12 participants the test can miss small departures from normality, so the results should be read together with the histograms in @fig-distributions.
+The Shapiro–Wilk test was used to assess the normality of each continuous covariate (@tbl-normality). Its null hypothesis (H0) is that the data follow a normal distribution; a p-value below 0.05 leads to rejection of H0. With only 12 participants, the test has limited power to detect departures from normality, so non-significant results do not establish normality and should be interpreted alongside the histograms in @fig-distributions.
 
-Age, weight, albumin and CRP are consistent with a normal distribution (all p > 0.3). Creatinine is not (p = 0.04). eGFR is borderline (p = 0.09). Both are affected by a single participant, ID11, who has the highest creatinine (1.50 mg/dL) and the lowest eGFR (40.5 mL/min/1.73 m²). For this reason, @tbl-baseline reports both the mean (SD) and the median [range] for every covariate.
+Normality was not rejected for age, weight, albumin, CRP or eGFR (all p > 0.05), whereas it was rejected for creatinine (p = 0.036). Participant ID11 had the highest creatinine concentration (1.50 mg/dL) and the lowest eGFR (40.5 mL/min/1.73 m²), contributing to the observed distributions of these two variables. To provide complementary summaries, @tbl-baseline reports both the mean (SD) and the median [range] for every continuous covariate.
 
 ### Correlations
 
@@ -1119,6 +1124,10 @@ With many exploratory associations in 12 participants, some nominally significan
 
 Not all 30 correlations in @fig-cov-heatmap were interpreted, for three reasons. First, CL is calculated as Dose/AUC0-∞, so the CL row mirrors the AUC0-∞ row with the opposite sign (for example, eGFR–AUC0-∞ ρ = +0.40 and eGFR–CL ρ = −0.40) and carries no extra information. Second, weight, creatinine and eGFR all reflect body size (see the next tabs), so the intermediate associations of ke with creatinine (ρ = +0.36) and weight (ρ = +0.29), and of AUC0-∞ with weight and creatinine (ρ = −0.34), are weaker echoes of the same effect rather than independent signals: heavier participants show a lower exposure and a slightly faster elimination. Third, the remaining associations were weak (\|ρ\| ≤ 0.25) with no consistent direction. No association remained significant after correction for multiple testing.
 
+::: {.callout-note}
+Although the W and p values for the Wilcoxon test were entered manually into the table for convenience, they are the results of an analysis performed using the code shown below. As shown in the code, the values were obtained through an NCA analysis using PKanalix, but these tests can be repeated in the same way using the values calculated in (@tbl-ind-iv)
+:::
+
 ```{r Spearman/wilcox calculation and figure creation IV}
 #| eval: false
 #| code-fold: true
@@ -1250,6 +1259,10 @@ After oral dosing, the parameters also depend on bioavailability: AUC0-∞ and C
 
 Not all 30 correlations in @fig-cov-heatmap-oral were interpreted. CRP and body weight showed the most pronounced patterns: both were negatively associated with AUC0-∞ and Cmax and positively associated with ke and Vz/F, and they are presented in the next tabs. The other continuous covariates showed weaker associations. Albumin had modest correlations with all parameters (\|ρ\| ≈ 0.30–0.36), in the same directions as after IV dosing; a contribution of protein binding is possible but not established, so these associations were not illustrated separately. Creatinine showed a moderate association with Vz/F (ρ = +0.41) but weaker ones with the other parameters, and age and eGFR were consistently weak (\|ρ\| ≤ 0.22). The CYP2D6 comparisons are presented in the last tab because of their biological relevance. The comparison of Vz/F between sexes showed no clear difference (W = 12, p = 0.57) and was not illustrated, although this does not exclude a sex effect. No association remained significant after correction for multiple testing.
 
+::: {.callout-note}
+Although the W and p values for the Wilcoxon test were entered manually into the table for convenience, they are the results of an analysis performed using the code shown below. As shown in the code, the values were obtained through an NCA analysis using PKanalix, but these tests can be repeated in the same way using the values calculated in (@tbl-ind-oral).
+:::
+
 ```{r Spearman/wilcox calculation and figure creation ORAL}
 #| eval: false
 #| code-fold: true
@@ -1346,7 +1359,7 @@ In the pooled comparison, the \*3/\*5 group had a higher AUC0-∞ (W = 5, p = 0.
 
 **Summary** 
 
-After IV dosing, body weight was the most consistent covariate: heavier participants had a lower Cmax and a larger Vz, and the eGFR and creatinine associations reflected body size rather than renal function. After oral dosing, CRP and body weight were associated with lower exposure and a higher Vz/F, which may partly reflect differences in bioavailability. Albumin (IV) showed a plausible but exploratory trend. Across both routes, participants with CYP2D6 categories 3 and 5 tended to have higher exposure and slower elimination, consistent with metabolism by CYP2D6.
+After IV dosing, body weight was the most consistent covariate: heavier participants had a lower Cmax and a larger Vz, and the eGFR and creatinine associations may partially reflect body-size differences. After oral dosing, CRP and body weight were associated with lower exposure and a higher Vz/F, which may partly reflect differences in bioavailability. Albumin (IV) showed a plausible but exploratory trend. Across both routes, participants with CYP2D6 categories 3 and 5 tended to have higher exposure and slower elimination, consistent with metabolism by CYP2D6.
 
 **Limitations** 
 
@@ -1356,7 +1369,27 @@ This is an exploratory analysis in 12 participants, with low power and many asso
 
 As for the covariate analysis, the dataset was split by route of administration, and a structural model was built separately for the IV infusion and the oral data. For the IV dataset, the time-zero records were adapted so that PKanalix could read them correctly: the concentration value of 0 on each dosing record was removed, so that the dose line is not interpreted as an observation, and the additional time-zero line without a measured concentration was deleted since this line gave no additional information. PKanalix encodes the resulting empty cells as missing values (".").
 
-Candidate models were first identified from the shape of the individual concentration–time profiles. After IV infusion, concentrations peaked at the end of the infusion and then declined in a single phase, with no visible distribution phase, suggesting a one-compartment model with linear elimination. After oral dosing, concentrations rose rapidly to a peak and then declined in a single phase, with no visible delay before absorption, suggesting a one-compartment model with first-order absorption, no lag time and linear elimination. These choices were confirmed by a compartmental analysis in PKanalix: the individual fits followed the observed profiles closely and the observations versus predictions lay on the line of identity for both routes. The corresponding compartment diagrams and ordinary differential equations (ODEs) are presented below.
+Candidate models were first identified from the shape of the individual concentration–time profiles. After IV infusion, concentrations peaked at the end of the infusion and then declined in a single phase, with no visible distribution phase, suggesting a one-compartment model with linear elimination. After oral dosing, concentrations rose rapidly to a peak and then declined in a single phase, with no visible delay before absorption, suggesting a one-compartment model with first-order absorption, no lag time and linear elimination. These choices were confirmed by a compartmental analysis in PKanalix: the individual fits followed the observed profiles closely and the observations versus predictions lay on the line of identity for both routes. 
+
+For example, the following plots illustrate the model fit for the oral route. The individual fits assess whether the model reproduces the observed concentration–time profiles: the predicted curves closely follow the measured concentrations for each individual. The observations-versus-predictions plot provides a complementary check across the concentration range, with points lying close to the line of identity (observed = predicted), indicating good agreement between observations and individual predictions.
+
+```{r}
+#| label: fig-oral-fits
+#| echo: false
+#| layout-ncol: 2
+#| out-width: "100%"
+#| fig-cap: "Goodness-of-fit diagnostics for the oral-route compartmental analysis in PKanalix."
+#| fig-subcap:
+#|   - "Individual fits: observed concentrations (blue points) and model predictions (purple curves)."
+#|   - "Observations versus individual predictions. The black line represents the line of identity."
+
+knitr::include_graphics(c(
+  "images/Indiv_fits_oral.png",
+  "images/obs_pred_oral.png"
+))
+```
+
+The corresponding compartment diagrams and ordinary differential equations (ODEs) are presented below.
 
 
 ```{r}
@@ -1451,7 +1484,7 @@ ggplot() +
 $$
 \begin{aligned}
 \frac{dA_g}{dt} &= -k_a A_g{(t)} \\
-\frac{dA_1}{dt} &= F \, k_a A_g{(t)} - k_e A_p{(t)} \\
+\frac{dA_1}{dt} &= F \, k_a A_g{(t)} - k_e A_1{(t)} \\
 \end{aligned}
 $$ {#eq-oral}
 
@@ -1462,7 +1495,7 @@ Absolute bioavailability was estimated from the within-participant oral-to-IV AU
 
 # Conclusions
 
-This Phase I two-sequence, two-period crossover study characterised the pharmacokinetics (PK) of a novel tamoxifen-like prodrug, Tomovicen, of 500 mg given as a 0.5 h intravenous infusion and orally in 12 participants. The non-compartmental analysis, of the dataset cleaned, showed that the compound is well absorbed, with a mean absolute bioavailability of 69% (SD 15%; geometric mean 68%; range 45–91%), meaning that about two thirds of the oral dose reaches the systemic circulation, with noticeable between-participant differences. The terminal half-life was about 6.5 h after both routes (IV 6.48 ± 0.96 h; oral 6.43 ± 1.1 h; ratio 1.00, 95% CI 0.90–1.10), without evidence of flip-flop kinetics, and the IV clearance (0.96 L/h) and volume of distribution (8.7 L) were low and little variable. Oral Cmax (24.3 ± 2.6 mg/L) was reached at +/- 4 h. Such a half-life is much shorter than that of tamoxifen (about 7 days) and predicts negligible accumulation on once-daily dosing (accumulation ratio ≈ 1.1), with steady state reached within about one day; whether the end-of-interval concentration (about 10% of Cmax) remains above the effective level cannot be decided without a pharmacodynamic target or metabolite data, so suitability for once-daily dosing remains to be confirmed. No period or carry-over effect was detected (p = 0.87 and p = 0.30), although the power of these tests is low and the washout duration is undocumented.
+This Phase I two-sequence, two-period crossover study characterised the pharmacokinetics (PK) of a novel tamoxifen-like prodrug, Tomovicen, of 500 mg given as a 0.5 h intravenous infusion and orally in 12 participants. The non-compartmental analysis of the cleaned dataset showed a mean absolute bioavailability of 69% (SD 15%; geometric mean 68%; range 45–91%), meaning that about two thirds of the oral dose reaches the systemic circulation, with noticeable between-participant differences. The terminal half-life was about 6.5 h after both routes (IV 6.48 ± 0.96 h; oral 6.43 ± 1.1 h; ratio 1.00, 95% CI 0.90–1.10), without evidence of flip-flop kinetics, and the IV clearance (0.96 L/h) and volume of distribution (8.7 L) were low and little variable. Oral Cmax (24.3 ± 2.6 mg/L) was reached at +/- 4 h. Such a half-life is much shorter than that of tamoxifen (about 7 days) and predicts negligible accumulation on once-daily dosing (accumulation ratio ≈ 1.1), with steady state reached within about one day; whether the end-of-interval concentration (about 10% of Cmax) remains above the effective level cannot be decided without a pharmacodynamic target or metabolite data, so suitability for once-daily dosing remains to be confirmed. No period or carry-over effect was detected (p = 0.87 and p = 0.30), although the power of these tests is low and the washout duration is undocumented.
 
 In the exploratory covariate analysis, body weight was the most consistent covariate after IV dosing (heavier participants had a lower Cmax and a larger Vz), while higher CRP and body weight were associated with lower oral exposure and a higher Vz/F, possibly reflecting a lower oral bioavailability. Participants carrying the CYP2D6 *3/*5 codes tended to have higher exposure and slower elimination than *1/*2 participants (oral AUC0-∞ and ke: p = 0.041), which is consistent with a contribution of CYP2D6 to the clearance of the parent compound, but this does not hold after correction for multiple testing. Given the small sample size and the number of associations tested, these findings are hypothesis-generating only. A one-compartment model, with a zero-order infusion for the IV route and first-order absorption with bioavailability F for the oral route, is proposed to describe the data.
 
@@ -1470,7 +1503,7 @@ The next step is a population PK analysis (non-linear mixed-effects modelling) t
 
 # Declaration on the use of generative AI {.unnumbered}
 
-The authors carried out the data management, analyses and interpretation in this report. Generative AI tools (Claude, Anthropic) were used only to improve the wording of some sections and to help write and debug parts of the R code. The authors take full responsibility for the content of this report.
+The authors carried out the data management, analyses and interpretation in this report. Generative AI tools (Claude, Anthropic, Perplexity) were used only to improve the wording of some sections and to help write and debug parts of the R code. The authors take full responsibility for the content of this report.
 
 # References {.unnumbered}
 
