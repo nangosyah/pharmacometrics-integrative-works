@@ -1,7 +1,6 @@
 ---
 title: "Phase I Crossover Bioavailability Study of Tomovicen, a Novel Tamoxifen-like Prodrug"
 author: "Renda V., Bouggar S., Frederickx S., Nangosyah T."
-date: today
 format:
   pdf:
     number-sections: true
@@ -43,6 +42,26 @@ references:
     page: 1737-1749
     issued:
       year: 2021
+  - id: drugbank-tamoxifen
+    type: webpage
+    title: "Tamoxifen: Uses, Interactions, Mechanism of Action"
+    URL: "https://drugbank.com"
+    container-title: DrugBank Online
+  - id: cbip_dermatologie_intro
+    type: website
+    url: "https://cbip.be"
+  - id: wilkinson2016
+    type: article-journal
+    author:
+      - family: Wilkinson
+        given: Mark D.
+    title: "The FAIR Guiding Principles for scientific data management and stewardship"
+    container-title: Scientific Data
+    volume: 3
+    page: "160018"
+    issued:
+      year: 2016
+
 execute:
   echo: false
   warning: false
@@ -192,7 +211,8 @@ summary_all <- params_long |>
   group_by(route, code) |>
   summarise(n = n(), mean = mean(value), sd = sd(value),
             median = median(value), q1 = quantile(value, 0.25), q3 = quantile(value, 0.75),
-            min = min(value), max = max(value), gmean = exp(mean(log(value))), .groups = "drop")
+            min = min(value), max = max(value), gmean = exp(mean(log(value))),
+            gcv = 100 * sqrt(exp(sd(log(value))^2) - 1), .groups = "drop")
 
 # Once-daily dosing (24 h interval), based on the mean elimination rate constant
 accum_ratio_24h <- 1 / (1 - exp(-mean(wide_iv$ke) * 24))
@@ -201,71 +221,42 @@ trough_fraction <- exp(-mean(wide_iv$ke) * 24)
 
 # Abstract {.unnumbered}
 
-**Background** 
-
-Tomovicen (PMX001) is an investigational tamoxifen-like prodrug developed to overcome the limitations of tamoxifen, including its CYP2D6-dependent activation and high inter-individual pharmacokinetic (PK) variability. 
-
-**Methods** 
-
-Twelve healthy adults (`r sum(subj_clean$SEX == 0)` female; aged `r round(min(subj_clean$AGE))`–`r round(max(subj_clean$AGE))` years) received `r dose_iv_mg` mg as a `r sig(infusion_h, 2)` h intravenous (IV) infusion and `r dose_oral_mg` mg orally in a two-period crossover. PK parameters were derived by non-compartmental analysis (NCA) in PKNCA and PKanalix; a covariate screening and a proposed compartmental model were also assessed. 
-
-**Results.** 
-
-Clearance was low (CL `r g("IV", "CL", "mean", 2)` ± `r g("IV", "CL", "sd", 2)` L/h) and distribution limited (Vz `r g("IV", "Vz", "mean", 2)` ± `r g("IV", "Vz", "sd", 2)` L), yielding a half-life of `r g("IV", "t_half", "mean", 2)` ± `r g("IV", "t_half", "sd", 2)` h. Mean absolute bioavailability was `r as_pct(mean(f_per_subject$F))` (range `r as_pct(min(f_per_subject$F))`–`r as_pct(max(f_per_subject$F))`). Body weight and CYP2D6 subtype were the most consistent covariates, and a one-compartment model was selected for both routes. 
-
-**Conclusion.** 
-
-Tomovicen is moderately bioavailable with a short half-life, predicting negligible once-daily accumulation. Suitability for once-daily dosing requires metabolite measurement and a pharmacodynamic target.
+Tomovicen is an investigational tamoxifen-like prodrug developed to improve on the pharmacokinetic (PK) and pharmacodynamic (PD) profile of tamoxifen. This study characterised its bioavailability and primary PK parameters. Twelve healthy adults (`r sum(subj_clean$SEX == 0)` female and `r sum(subj_clean$SEX == 1)` male; aged `r round(min(subj_clean$AGE))`–`r round(max(subj_clean$AGE))` years) received `r dose_iv_mg` mg as a `r sig(infusion_h, 2)` h intravenous (IV) infusion and `r dose_oral_mg` mg orally in a two-period crossover. PK parameters were derived by non-compartmental analysis (NCA) in PKNCA and PKanalix, with a covariate screening and a proposed compartmental model also assessed. Clearance was low (CL `r g("IV", "CL", "mean", 2)` ± `r g("IV", "CL", "sd", 2)` L/h) and distribution limited (Vz `r g("IV", "Vz", "mean", 2)` ± `r g("IV", "Vz", "sd", 2)` L), yielding a half-life of `r g("IV", "t_half", "mean", 2)` ± `r g("IV", "t_half", "sd", 2)` h. Mean absolute bioavailability was `r as_pct(mean(f_per_subject$F))` (range `r as_pct(min(f_per_subject$F))`–`r as_pct(max(f_per_subject$F))`). Body weight and CYP2D6 subtype were the most consistent covariates, and a one-compartment model was selected for both routes. Tomovicen is moderately bioavailable with a short half-life, predicting negligible once-daily accumulation. Suitability for once-daily dosing requires metabolite measurement and a pharmacodynamic target.
 
 # Introduction
 
-Tamoxifen is a selective oestrogen receptor modulator (SERM) widely used in hormone-sensitive breast cancer, yet three pharmacological features limit its clinical use. First, it is a prodrug that depends on CYP2D6—a highly polymorphic enzyme—to form its main active metabolite, endoxifen; poor metabolisers and patients receiving strong CYP2D6 inhibitors show approximately 75% lower endoxifen concentrations, reducing efficacy. Second, tamoxifen is more than 99% protein-bound and is administered only orally, so its absolute bioavailability, systemic clearance and volume of distribution cannot be determined without an intravenous reference. Third, its terminal elimination half-lives are very long (≈ 7 days for the parent, ≈ 14 days for N-desmethyltamoxifen), meaning steady state is reached over weeks, dose changes act slowly, and CYP2D6-driven inter-individual variability in exposure is amplified over time into a wide distribution of endoxifen concentrations. Together, these features make dose individualisation and the definition of a reliable therapeutic window difficult in practice.
+Tamoxifen, a non-steroidal selective oestrogen receptor modulator (SERM), is a widely used endocrine therapy for ER-positive breast cancer (adjuvant, advanced and male disease; 20 mg/day). It is an ER antagonist in breast tissue and a partial agonist in the endometrium, bone and liver, which explains both its benefits (bone mass, lower LDL cholesterol) and its adverse effects (hot flushes, thromboembolism, endometrial cancer).(RCP of tamoxifen)
 
-Tomovicen (PMX001) is designed to address these limitations while retaining the anti-oestrogenic mechanism of action. This Phase I two-sequence, two-period crossover study in healthy volunteers determined the absolute oral bioavailability and primary PK parameters of the parent compound, providing the foundation for dose selection in Phase II.
+After oral dosing, tamoxifen is rapidly absorbed ($t_{max}$ 4–7 h; $C_{max}$ about 40 ng/mL), highly protein-bound (>99%) and widely distributed (about 50–60 L/kg). It is a prodrug: CYP3A4/5 converts it to *N*-desmethyltamoxifen, then CYP2D6 to endoxifen, whose ER affinity is 30–100 times higher than that of the parent. Elimination is slow (half-life 5–7 days for tamoxifen, about 14 days for *N*-desmethyltamoxifen), so steady state takes about three months [@drugbank-tamoxifen].
+
+This pharmacology raises several challenges, pharmacokinetically, it is a prodrug that depends on CYP2D6 for activation, so exposure to endoxifen varies widely between patients (poor metabolisers and strong CYP2D6 inhibitors lower it by
+65-75%). Its very long half-lives (5-14 days) and enterohepatic recirculation delay steady state and complicate modelling, and its oral-only use, with high protein binding, prevents estimating absolute bioavailability, clearance and volume of
+distribution. Pharmacodynamically, its mixed agonist/antagonist activity causes both efficacy and adverse effects, its response depends on active metabolites rather than on the dose given, and it is limited by resistance, poor adherence and a poorly defined therapeutic window (endoxifen threshold of about 5.97 ng/mL, still debated).
 
 # Methods
 
-**Study design** 
+## **Study design** 
 
-Twelve participants received `r dose_iv_mg` mg Tomovicen as a `r sig(infusion_h, 2)` h IV infusion and `r dose_oral_mg` mg orally in a randomised sequence, separated by a washout of undocumented length. Plasma samples were collected at 17–18 nominal time points from 0.5 to 96 h after each dose.
+Twelve participants received `r dose_iv_mg` mg Tomovicen as a `r sig(infusion_h, 2)` h IV infusion and `r dose_oral_mg` mg orally in a randomised sequence, separated by a washout of undocumented length. Plasma samples were collected at 17–18 nominal time points from 0.5 to 96 h after each dose; only the parent compound was measured.
 
-**Data management** 
+## **Data management** 
 
-The raw dataset (one Excel sheet per participant) was audited and curated without modifying the source file; all anomalies and their resolutions are documented in the companion [interactive dashboard report](https://github.com/nangosyah/pharmacometrics-integrative-works/blob/main/integrative-one/integrative-one-reports/PMX001_dashboard.html). Data management followed the FAIR principles [@inker]: scripted transformations, a variable dictionary and version-controlled code support findability, accessibility, interoperability and reusability.
+The raw dataset (one Excel sheet per participant) was audited and curated without modifying the source file; all anomalies and their resolutions are documented in the companion [interactive dashboard report](https://github.com/nangosyah/pharmacometrics-integrative-works/blob/main/integrative-one/integrative-one-reports/PMX001_dashboard.html). Data management followed the FAIR principles [@wilkinson2016]: scripted data transformations, a variable dictionary and version-controlled code to support findability, accessibility, interoperability and reusability. eGFR was calculated with the CKD-EPI 2021 equation.
 
-**Pharmacokinetic analysis** 
+## **Pharmacokinetic analysis** 
 
-NCA was performed with PKNCA [@pknca] in R (version `r paste(R.version$major, R.version$minor, sep = ".")`). AUC was computed by the linear-up/log-down trapezoidal rule; the terminal rate constant (λz) was estimated by log-linear regression on ≥ 3 post-peak points (R² ≥ 0.90; extrapolated area ≤ 20%). The absorption rate constant (ka) was derived by the method of residuals and the absolute bioavailability (F) as the within-participant dose-normalised AUC ratio. Compartmental analysis was performed in MonolixSuite PKanalix 2024R1. Covariate screening used Spearman rank correlation for continuous covariates and the Wilcoxon rank-sum test for categorical covariates; a value was considered statistically significant when p < 0.05.
+NCA was performed with PKNCA [@pknca] in R (version `r paste(R.version$major, R.version$minor, sep = ".")`). AUC was computed by the linear-up/log-down trapezoidal rule; the terminal rate constant ($\lambda_z$) was estimated by log-linear regression on $\geq$ 3 post-peak points (R^2^ $\geq$ 0.90; extrapolated area $\leq$ 20%). The absorption rate constant (k~a~) was derived by the method of residuals and the absolute bioavailability as $F = (AUC_{oral}/D_{oral})/(AUC_{IV}/D_{IV})$ within each participant. The once-daily accumulation ratio was predicted as $R = 1/(1 - e^{-\lambda_z \tau})$ ($\tau$ = 24 h) and the steady-state trough-to-peak ratio as $e^{-\lambda_z \tau}$, assuming linear kinetics. Period and carry-over effects were tested on log AUC~0–∞~ with Welch t-tests between the two sequences, using within-participant period differences and participant totals, respectively. Compartmental analysis was performed in MonolixSuite PKanalix 2024R1. Covariate screening used individual PKanalix NCA parameters (adjusted R^2^ $\geq$ 0.98), with Spearman rank correlation ($\rho$) for continuous covariates and the Wilcoxon rank-sum test for categorical covariates, with CYP2D6 categories 1–2 (normal function) pooled against 3 and 5 (no function); a value was considered statistically significant when p < 0.05.
 
 # Results
 
 ## Baseline characteristics
 
+**Table 1.** Baseline characteristics of the study cohort (n = 12). CYP2D6 codes 1–2: normal-function; 3 and 5: no-function alleles.
 
-
-| Characteristic | Mean | SD | Range | n (%) |
-|:---------------|-----:|---:|:-----:|------:|
-| Age (years) | 56.8 | 4.6 | 50.3–64.4 | |
-| Weight (kg) | 77.6 | 9.2 | 64.4–92.9 | |
-| eGFR (mL/min/1.73 m²) | 87.1 | 19.3 | 40.5–107.5 | |
-| Albumin (g/L) | 45.0 | 2.7 | 40.6–50.0 | |
-| CRP (mg/L) | 2.9 | 1.7 | 0.3–6.1 | |
-| **Sex** | | | | |
-| Female | | | | 8 (67%) |
-| Male | | | | 4 (33%) |
-| **CYP2D6 subtype (code)** | | | | |
-| 1(functional) | | | | 3 (25%) |
-| 2(functional) | | | | 3 (25%) |
-| 3(non-functional) | | | | 2 (17%) |
-| 5(non-functional) | | | | 4 (33%) |
-| **Ethnicity** | | | | |
-| Asian | | | | 3 (25%) |
-| Black | | | | 3 (25%) |
-| Other | | | | 3 (25%) |
-| White | | | | 3 (25%) |
-
-: Baseline characteristics (n = 12). Continuous variables: mean, SD and range; categorical variables: n (%). {#tbl-baseline-report}
-
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/baseline_combined.png} 
+\end{figure}
 
 The 12 participants were middle-aged adults with mean body weight `r round(mean(subj_clean$WT), 1)` kg and mean eGFR `r round(mean(subj_clean$eGFR), 1)` mL/min/1.73 m²; one participant had markedly reduced renal function (eGFR `r round(min(subj_clean$eGFR), 1)` mL/min/1.73 m²). Eight participants were female and four male, balanced across the two treatment sequences. All continuous covariates were consistent with normality (Shapiro–Wilk p > 0.09) except creatinine (p = 0.04), which was influenced by the same participant. Each CYP2D6 subtype and ethnic group contained only two to four participants, limiting subgroup comparisons.
 
@@ -286,56 +277,61 @@ ggplot(filter(conc_all, CONC > 0), aes(TIME, CONC, colour = Administration)) +
   theme(panel.grid.minor = element_blank(), legend.position = "right")
 ```
 
-All `r 2 * n_distinct(pk$ID)` profiles met the acceptance criteria (R² ≥ `r sig(min(nca_quality[["Min R²"]]), 4)`; extrapolated area < 0.04%). After IV infusion, concentrations declined as a single log-linear phase with no visible distribution phase, indicating one-compartment disposition. After oral dosing, concentrations peaked at approximately 4 h and the terminal slope was parallel to the IV curve, confirming first-order absorption without flip-flop kinetics.
-
-
+All `r 2 * n_distinct(pk$ID)` profiles met the acceptance criteria ($R^2 \ge$ `r sig(min(nca_quality[["Min R²"]]), 4)`; extrapolated area $< 0.04\%$). After IV infusion, concentrations declined as a single log-linear phase with no visible distribution phase, indicating one-compartment disposition. After oral dosing, concentrations peaked at approximately $4\text{ h}$ and the terminal slope was parallel to the IV curve, confirming first-order absorption without flip-flop kinetics.
 
 ```{r}
 #| label: tbl-pk-report
-#| tbl-cap: "Pharmacokinetic parameters of Tomovicen after 500 mg IV infusion and 500 mg oral dose (n = 12). Mean ± SD (CV%); tmax: median [IQR]; F: within-subject dose-normalised AUC ratio."
+#| tbl-cap: 'Pharmacokinetic parameters of Tomovicen after 500 mg IV infusion and 500 mg oral dose (n = 12). Values are mean $\pm$ SD unless marked; geometric CV = $100\sqrt{e^{s^2_{\log}} - 1}$. $^a$Median [IQR]. $^b$Implausibly uniform estimate from the method of residuals (see Limitations). F: within-participant dose-normalised AUC ratio.'
+
+ind <- "\u00a0\u00a0\u00a0"   # non-breaking spaces for indentation
+
 make_row <- function(label, route, code) {
   r <- summary_all[summary_all$route == route & summary_all$code == code, ]
   if (nrow(r) == 0) return(c(label, "–", "–", "–", "–"))
   if (code == "tmax") {
-    return(c(label,
+    return(c(paste0(label, "$^a$"),
              paste0(sig(r$median, 2), " [", sig(r$q1, 2), "–", sig(r$q3, 2), "]"),
-             "–", "–", paste0(sig(r$min, 2), "–", sig(r$max, 2))))
+             "–", "–",
+             paste0(sig(r$min, 2), "–", sig(r$max, 2))))
   }
-  cv_pct <- if (!is.na(r$mean) && r$mean != 0) sprintf("%.0f", 100 * r$sd / r$mean) else "–"
+  if (code == "ka") label <- paste0(label, "$^b$")
   c(label,
-    paste0(sig(r$mean, 3), " ± ", sig(r$sd, 2)),
-    cv_pct,
+    paste0(sig(r$mean, 3), " $\\pm$ ", sig(r$sd, 2)),
     sig(r$gmean, 3),
+    sprintf("%.0f", r$gcv),
     paste0(sig(r$min, 3), "–", sig(r$max, 3)))
 }
 
+hdr <- function(x) c(paste0("**", x, "**"), "", "", "", "")
+
 pk_tab <- as.data.frame(rbind(
-  c("**IV infusion**",                "",    "",    "",    ""),
-  make_row("  Cmax (mg/L)",           "IV",  "Cmax"),
-  make_row("  tmax (h)",              "IV",  "tmax"),
-  make_row("  AUC0-inf (mg.h/L)",    "IV",  "AUC_inf"),
-  make_row("  CL (L/h)",             "IV",  "CL"),
-  make_row("  Vz (L)",               "IV",  "Vz"),
-  make_row("  Vss (L)",              "IV",  "Vss"),
-  make_row("  t1/2 (h)",             "IV",  "t_half"),
-  make_row("  MRT (h)",              "IV",  "MRT"),
-  c("**Oral**",                      "",    "",    "",    ""),
-  make_row("  Cmax (mg/L)",          "Oral","Cmax"),
-  make_row("  tmax (h)",             "Oral","tmax"),
-  make_row("  AUC0-inf (mg.h/L)",   "Oral","AUC_inf"),
-  make_row("  CL/F (L/h)",          "Oral","CL_F"),
-  make_row("  Vz/F (L)",            "Oral","Vz_F"),
-  make_row("  ka (1/h)",            "Oral","ka"),
-  make_row("  t1/2 (h)",            "Oral","t_half"),
-  make_row("  MRT (h)",             "Oral","MRT"),
-  c("**Bioavailability**",           "",    "",    "",    ""),
-  make_row("  F",                   "Both","F")
+  hdr("IV infusion"),
+  make_row(paste0(ind, "C$_{max}$ (mg/L)"),                  "IV",   "Cmax"),
+  make_row(paste0(ind, "t$_{max}$ (h)"),                     "IV",   "tmax"),
+  make_row(paste0(ind, "AUC$_{0-\\infty}$ (mg$\\cdot$h/L)"), "IV",   "AUC_inf"),
+  make_row(paste0(ind, "CL (L/h)"),                          "IV",   "CL"),
+  make_row(paste0(ind, "V$_z$ (L)"),                         "IV",   "Vz"),
+  make_row(paste0(ind, "V$_{ss}$ (L)"),                      "IV",   "Vss"),
+  make_row(paste0(ind, "t$_{1/2}$ (h)"),                     "IV",   "t_half"),
+  make_row(paste0(ind, "MRT (h)"),                           "IV",   "MRT"),
+  hdr("Oral"),
+  make_row(paste0(ind, "C$_{max}$ (mg/L)"),                  "Oral", "Cmax"),
+  make_row(paste0(ind, "t$_{max}$ (h)"),                     "Oral", "tmax"),
+  make_row(paste0(ind, "AUC$_{0-\\infty}$ (mg$\\cdot$h/L)"), "Oral", "AUC_inf"),
+  make_row(paste0(ind, "CL/F (L/h)"),                        "Oral", "CL_F"),
+  make_row(paste0(ind, "V$_z$/F (L)"),                       "Oral", "Vz_F"),
+  make_row(paste0(ind, "k$_a$ (h$^{-1}$)"),                  "Oral", "ka"),
+  make_row(paste0(ind, "t$_{1/2}$ (h)"),                     "Oral", "t_half"),
+  make_row(paste0(ind, "MRT (h)"),                           "Oral", "MRT"),
+  hdr("Bioavailability"),
+  make_row(paste0(ind, "F"),                                 "Both", "F")
 ))
-colnames(pk_tab) <- c("Parameter", "Mean +/- SD", "CV%", "Geom. mean", "Range")
-knitr::kable(pk_tab, row.names = FALSE)
+
+colnames(pk_tab) <- c("Parameter", "Mean $\\pm$ SD", "Geom. mean", "Geom. CV (%)", "Range")
+knitr::kable(pk_tab, row.names = FALSE, align = "lcccc", escape = FALSE)
 ```
 
-The compound shows **low clearance** (CL `r g("IV","CL","mean",2)` L/h, ≈ 1% of hepatic blood flow), making exposure sensitive to enzyme activity rather than blood flow. Volume of distribution was limited (Vz ≈ Vss ≈ `r g("IV","Vz","mean",2)` L, well below total body water), unlike tamoxifen. The half-life was the same by both routes (`r g("IV","t_half","mean",2)` vs `r g("Oral","t_half","mean",2)` h; ratio 1.00, 95% CI 0.90–1.10), with no period or carry-over effect (p > 0.25). Between-subject variability was moderate for clearance and exposure (CV 19–25%) but low for volume (≈ 5%). With once-daily dosing the accumulation ratio would be `r sig(accum_ratio_24h, 3)`, with trough concentrations at approximately `r as_pct(trough_fraction)` of peak.
+The compound shows low clearance (CL `r g("IV","CL","mean",2)` L/h, $\approx$ 1% of hepatic blood flow), making exposure sensitive to enzyme activity rather than blood flow. Volume of distribution was limited (V~z~ $\approx$ V~ss~ $\approx$ `r g("IV","Vz","mean",2)` L, well below total body water), unlike tamoxifen. The half-life was the same by both routes (`r g("IV","t_half","mean",2)` vs `r g("Oral","t_half","mean",2)` h; ratio 1.00, 95% CI 0.90–1.10), with no period or carry-over effect (p > 0.25). Between-subject variability was moderate for clearance and exposure (CV 19–25%) but low for volume ($\approx$ 5%). Assuming linear kinetics, once-daily dosing would give a predicted accumulation ratio of `r sig(accum_ratio_24h, 3)`, with steady-state trough concentrations at approximately `r as_pct(trough_fraction)` of peak.
 
 ## Absolute bioavailability
 
@@ -353,11 +349,13 @@ ggplot(f_per_subject, aes(reorder(factor(ID), F), F)) +
   theme_bw(base_size = 9)
 ```
 
-Mean absolute oral bioavailability was `r as_pct(mean(f_per_subject$F))` (SD `r as_pct(sd(f_per_subject$F))`; range `r as_pct(min(f_per_subject$F))`–`r as_pct(max(f_per_subject$F))`). Every participant showed lower oral than IV exposure (all lines slope downward in within-participant comparisons), and F varied noticeably between individuals. Approximately one third of the oral dose is lost to incomplete absorption or first-pass metabolism, which may include CYP2D6-mediated conversion to the active metabolite.
+Mean absolute oral bioavailability was `r as_pct(mean(f_per_subject$F))` (SD `r as_pct(sd(f_per_subject$F))`; range `r as_pct(min(f_per_subject$F))`–`r as_pct(max(f_per_subject$F))`), and every participant had lower exposure after the oral than after the IV dose (@fig-bioav-report). About one third of the oral dose therefore does not reach the systemic circulation, which may reflect incomplete absorption or gut-wall metabolism; given the low hepatic extraction suggested by the clearance, hepatic first-pass loss is expected to be small. Whether part of this loss corresponds to conversion to the active metabolite cannot be assessed, as only the parent compound was measured. F also varied noticeably between individuals. This variability may reflect differences in gastrointestinal absorption, such as gastric emptying, intestinal transit and gut-wall metabolism, and possibly in CYP2D6-mediated conversion of the prodrug.
 
 ## Covariate pilot analysis
 
 Covariate relationships were explored separately for IV infusion and oral administration using individual NCA parameters from PKanalix. Visual inspection of covariate–parameter plots was complemented by Spearman rank correlations for continuous covariates and Wilcoxon rank-sum tests for categorical covariates, calculated in R. CYP2D6 categories {1,2} and {3,5} were pooled, conditional on the dataset codes representing the corresponding normal-function and no-function star alleles. Findings were interpreted according to association strength, consistency across related parameters and biological plausibility, rather than nominal p-values alone.
+
+After IV dosing, body weight was the most consistent covariate: heavier participants had lower C~max~ (Spearman $\rho = -0.52$, p = 0.089) and larger V~z~ ($\rho = +0.49$, p = 0.11). The eGFR and creatinine associations may partly reflect body-size differences rather than a direct renal effect. A plausible albumin–k~e~ association ($\rho = -0.40$, p = 0.20) may reflect protein-binding effects on clearance. After oral dosing, higher CRP was associated with lower AUC~0–∞~ ($\rho = -0.60$, p = 0.043) and C~max~ ($\rho = -0.65$, p = 0.026), potentially reflecting inflammation-related changes in oral bioavailability. Across both routes, the pooled CYP2D6 {3,5} group tended to have higher exposure and a slower terminal decline than the {1,2} group; the pooled comparison reached nominal significance for oral AUC~0–∞~ and k~e~ (p = 0.041), consistent with CYP2D6 contribution to clearance. These findings remain exploratory given the small sample size and the number of associations examined.
 
 ```{r}
 #| label: fig-cov-report
@@ -368,14 +366,12 @@ Covariate relationships were explored separately for IV infusion and oral admini
 knitr::include_graphics("images/covariates/iv-spearman-summary.png")
 ```
 
-After **IV dosing**, body weight was the most consistent covariate: heavier participants had lower Cmax (Spearman ρ = −0.52) and larger Vz (ρ = +0.49). The eGFR and creatinine associations may partly reflect body-size differences rather than a direct renal effect. A plausible albumin–ke association (ρ = −0.40) may reflect protein-binding effects on clearance. After **oral dosing**, higher CRP was associated with lower AUC₀₋∞ (ρ = −0.60, p = 0.043) and Cmax (ρ = −0.65, p = 0.026), potentially reflecting inflammation-related changes in oral bioavailability. Across both routes, the pooled CYP2D6 {3,5} group tended to have higher exposure and a slower terminal decline than the {1,2} group; the pooled comparison reached nominal significance for oral AUC₀₋∞ and ke (p = 0.041), consistent with CYP2D6 contribution to clearance. These findings remain exploratory given the small sample size and the number of associations examined.
-
 
 ## Proposed compartmental model
 
 ```{r}
 #| label: fig-models-report
-#| fig-cap: "One-compartment model diagrams. Left — IV: zero-order infusion (k0) with first-order elimination (ke). Right — Oral: first-order absorption (ka) with bioavailability fraction F and first-order elimination (ke)."
+#| fig-cap: "One-compartment model diagrams. Left(IV): zero-order infusion (k0) with first-order elimination (ke). Right(Oral): first-order absorption (ka) with bioavailability fraction F and first-order elimination (ke)."
 #| fig-height: 2.8
 #| fig-width: 6.2
 box_fill  <- "#a5a1c6"
@@ -425,30 +421,21 @@ p_iv + p_oral
 ```
 
 $$
-\frac{dA_1}{dt} = k_0 - k_e A_1{(t)}
+\frac{dA_1}{dt} = k_0 - k_e A_1(t), \qquad \frac{dA_{\mathrm{IV}}}{dt} = k_0
 $$ {#eq-iv}
-  
-  
-$$
-\frac{dA_{\mathrm{IV}}}{dt} = k_0
-$$
-  
-Here, $A_{\mathrm{IV}}$ is the cumulative amount infused; $k_0$ is 1000 mg/h during the 0.5 h infusion and zero thereafter.  
 
 $$
-\begin{aligned}
-\frac{dA_g}{dt} &= -k_a A_g{(t)} \\
-\frac{dA_1}{dt} &= F \, k_a A_g{(t)} - k_e A_p{(t)} \\
-\end{aligned}
+\frac{dA_g}{dt} = -k_a A_g(t), \qquad \frac{dA_1}{dt} = F \, k_a A_g(t) - k_e A_1(t)
 $$ {#eq-oral}
 
-with $A_g(0) = \text{Dose}$ and $A_1(0) = 0$.
+$A_{\mathrm{IV}}$ is the cumulative amount infused; $k_0$ is 1000 mg/h during the 0.5 h infusion and zero thereafter. For the oral model, $A_g(0) = \text{Dose}$ and $A_1(0) = 0$.
 
-Individual concentration–time profiles after IV infusion showed a single log-linear decline with Vz = Vss, supporting a one-compartment structural model with linear elimination. Oral profiles declined in parallel to the IV curve, confirming first-order absorption without a lag time. A one-compartment model with zero-order infusion (IV) and first-order absorption with bioavailability F (oral) was fitted in PKanalix; individual fits lay close to the line of identity for both routes, validating the structural choice. Initial parameter estimates taken from Table 2 confirmed good convergence.
+
+Individual concentration–time profiles after IV infusion showed a single log-linear decline with V~z~ $\approx$ V~ss~, supporting a one-compartment structural model with linear elimination. Oral profiles declined in parallel to the IV curve, confirming first-order absorption without a lag time. A one-compartment model with zero-order infusion (IV) and first-order absorption with bioavailability F (oral) was fitted in PKanalix; individual fits lay close to the line of identity for both routes, validating the structural choice. Initial parameter estimates taken from Table 2 confirmed good convergence.
 
 # Discussion
 
-Only the parent compound was measured in this study. Tomovicen is designed as a prodrug, and the active moiety responsible for anti-oestrogenic effect has not been identified or quantified. Without metabolite data it is not possible to confirm CYP2D6-mediated activation, to link exposure of the parent to pharmacodynamic effect, or to judge whether the trough concentration at 24 h (approximately `r as_pct(trough_fraction)` of peak for once-daily dosing) remains above an efficacious level. Second, the high degree of protein binding characteristic of tamoxifen-like structures may also apply to Tomovicen; if protein binding is substantial, free (pharmacologically active) drug concentrations will differ from total plasma concentrations, and inter-individual variability in albumin could produce clinically relevant differences in free exposure. Third, the washout duration between periods is undocumented, so carry-over cannot be formally excluded although both the period and carry-over tests were non-significant (p > 0.25). Finally, suitability for once-daily dosing cannot be confirmed on PK grounds alone without a pharmacodynamic target concentration for the relevant active species.
+Only the parent compound was measured in this study. Tomovicen is designed as a prodrug, and the active moiety responsible for anti-oestrogenic effect has not been identified or quantified. Without metabolite data it is not possible to confirm CYP2D6-mediated activation, to link exposure of the parent to pharmacodynamic effect, or to judge whether the trough concentration at 24 h (approximately `r as_pct(trough_fraction)` of peak for once-daily dosing) remains above an efficacious level. Second, the high degree of protein binding characteristic of tamoxifen-like structures may also apply to Tomovicen; if protein binding is substantial, free (pharmacologically active) drug concentrations will differ from total plasma concentrations, and inter-individual variability in albumin could produce clinically relevant differences in free exposure. Third, the washout duration between periods is undocumented, so carry-over cannot be formally excluded although both the period and carry-over tests were non-significant (p > 0.25). Finally, the dose and dosing interval cannot be set on PK grounds alone: both require a pharmacodynamic target for the active species, which needs dose–response data and quantification of conversion to the active metabolite(s).
 
 **Limitations** 
 
@@ -456,7 +443,7 @@ The sample of 12 participants provides low statistical power; many of the covari
 
 # Conclusion
 
-Tomovicen displays low clearance (`r g("IV","CL","mean",2)` L/h), limited volume of distribution (Vz = Vss = `r g("IV","Vz","mean",2)` L) and a half-life of approximately `r g("IV","t_half","mean",2)` h substantially shorter than tamoxifen. Mean absolute oral bioavailability was `r as_pct(mean(f_per_subject$F))` with moderate between-subject variability (CV `r sprintf("%.0f", 100 * sd(f_per_subject$F) / mean(f_per_subject$F))`%), and negligible accumulation is expected with once-daily dosing (accumulation ratio `r sig(accum_ratio_24h, 3)`). Body weight and CYP2D6 subtype were identified as the most relevant covariates, and a one-compartment model with first-order elimination and absorption adequately described the data. The next steps are a population PK analysis to quantify covariate effects on clearance and bioavailability, measurement of the active metabolite(s) to confirm CYP2D6 activation and establish an exposure–response relationship, and definition of a pharmacodynamic target before proceeding to Phase II. All analyses are fully reproducible from the companion [interactive dashboard report](https://github.com/nangosyah/pharmacometrics-integrative-works/blob/main/integrative-one/integrative-one-reports/PMX001_dashboard.html), which documents every data-handling step and output in accordance with FAIR principles.
+Tomovicen displays low clearance (`r g("IV","CL","mean",2)` L/h), limited volume of distribution (V~z~ $\approx$ V~ss~ $\approx$ `r g("IV","Vz","mean",2)` L) and a half-life of approximately `r g("IV","t_half","mean",2)` h substantially shorter than tamoxifen. Mean absolute oral bioavailability was `r as_pct(mean(f_per_subject$F))` with moderate between-subject variability (CV `r sprintf("%.0f", 100 * sd(f_per_subject$F) / mean(f_per_subject$F))`%), and negligible accumulation is expected with once-daily dosing (accumulation ratio `r sig(accum_ratio_24h, 3)`). Body weight and CYP2D6 subtype were identified as the most relevant covariates, and a one-compartment model with first-order elimination and absorption adequately described the data. The next steps are a population PK analysis to quantify covariate effects on clearance and bioavailability, measurement of the active metabolite(s) to confirm CYP2D6 activation and establish an exposure–response relationship, and definition of a pharmacodynamic target before proceeding to Phase II. All analyses are fully reproducible from the companion [interactive dashboard report](https://github.com/nangosyah/pharmacometrics-integrative-works/blob/main/integrative-one/integrative-one-reports/PMX001_dashboard.html), which documents every data-handling step and output in accordance with FAIR principles.
 
 # References {.unnumbered}
 
